@@ -1,4 +1,4 @@
-# AntiSleepDAC 
+# AntiSleepDAC v2.1.0
 **[🇨🇿 Scroll down for Czech version](#česká-verze--czech-version)**
 
 A lightweight, standalone Windows utility designed to prevent USB Audio DACs (Digital-to-Analog Converters) from automatically going to sleep or entering standby mode due to inactivity.
@@ -48,6 +48,7 @@ C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /out:AntiSleepDAC.exe /o
 ---
 
 # Česká verze / Czech version
+**Aktuální verze: v2.1.0**
 
 Lehká samostatná Windows utilita navržená tak, aby zabránila externím USB DAC (Digital-to-Analog) audio převodníkům v automatickém usínání kvůli nečinnosti.
 

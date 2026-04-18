@@ -143,7 +143,7 @@ namespace AntiSleepDAC
 
         public MainForm()
         {
-            this.Text = "AntiSleepDAC Konfigurace";
+            this.Text = "AntiSleepDAC Konfigurace (v2.1.0)";
             this.Width = 450;
             this.Height = 280;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -238,7 +238,7 @@ namespace AntiSleepDAC
                 
                 NotifyIcon tray = new NotifyIcon();
                 tray.Icon = SystemIcons.Information;
-                tray.Text = "AntiSleepDAC (" + deviceName + ")";
+                tray.Text = "AntiSleepDAC v2.1.0 (" + deviceName + ")";
                 tray.Visible = true;
                 
                 ContextMenu menu = new ContextMenu();

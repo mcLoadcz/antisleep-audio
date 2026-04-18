@@ -13,7 +13,7 @@ Some DACs automatically power off or enter a deep standby state if they don't de
 ## Features
 * **Device Selection:** Target the silent pulse directly to the DAC, bypassing your default system sound settings.
 * **Invisible Audio:** The periodic sound is 100% silent (zeroed out PCM data).
-* **GUI & Config:** Easy-to-use Windows interface to select your device which automatically saves to a `config.ini` file.
+* **GUI & Config:** Easy-to-use Windows interface to select your device and customize the keep-awake interval (in minutes), saving to `config.ini`.
 * **System Tray:** Runs cleanly in the background. Accessible via a small icon in your taskbar tray.
 
 ## Usage
@@ -61,7 +61,7 @@ Aplikace ke komunikaci využívá nízkoúrovňové jádro přes knihovnu `winmm
 ## Vlastnosti aplikce
 * **Volba Přehrávacího Zařízení:** Zvuk ticha se posílá exkluzivně jen a pouze na zvolený výstup.
 * **Neviditelné Audio:** Tón je garantované 100% ticho (samé nuly) a nedojde k lupnutí.
-* **Grafické prostředí a Konfigurace:** Aplikace obsahuje okno s výběrem a pamatuje si nastavení v souboru `config.ini`.
+* **Grafické prostředí a Konfigurace:** Aplikace obsahuje okno s výběrem zařízení a nastavením časového intervalu (počet minut), které si pamatuje v `config.ini`.
 * **System Tray (Lišta oznámení):** Běží čistě na pozadí jako malá ikonka vedle hodin. Tlačítkém pravé myši kontextově vyvoláte navrácení okna i kompletní vypnutí.
 
 ## Způsob použití

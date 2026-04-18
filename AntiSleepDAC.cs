@@ -136,6 +136,7 @@ namespace AntiSleepDAC
     public class MainForm : Form
     {
         ComboBox cmbDevices;
+        NumericUpDown numInterval;
         Button btnSave;
         Button btnSaveAndRun;
         Label lblInfo;
@@ -144,7 +145,7 @@ namespace AntiSleepDAC
         {
             this.Text = "AntiSleepDAC Konfigurace";
             this.Width = 450;
-            this.Height = 250;
+            this.Height = 280;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -162,50 +163,76 @@ namespace AntiSleepDAC
             
             cmbDevices.SelectedIndex = 0; // Default fallback
 
-            string savedDevice = GetConfigDevice();
+            Label lblInterval = new Label();
+            lblInterval.Text = "Interval buzení (minuty):";
+            lblInterval.SetBounds(20, 80, 130, 20);
+
+            numInterval = new NumericUpDown();
+            numInterval.Minimum = 1;
+            numInterval.Maximum = 120;
+            numInterval.Value = 25; // Default 25
+            numInterval.SetBounds(160, 78, 60, 20);
+
+            int savedInterval;
+            string savedDevice = GetConfigDevice(out savedInterval);
             if(!string.IsNullOrEmpty(savedDevice))
             {
                 int idx = devices.FindIndex(x => x.Trim() == savedDevice.Trim());
                 if(idx >= 0) cmbDevices.SelectedIndex = idx;
             }
+            if(savedInterval >= numInterval.Minimum && savedInterval <= numInterval.Maximum)
+            {
+                numInterval.Value = savedInterval;
+            }
 
             btnSave = new Button();
             btnSave.Text = "Pouze uložit do config.ini";
-            btnSave.SetBounds(20, 90, 160, 30);
-            btnSave.Click += (s, e) => SaveConfig(cmbDevices.SelectedItem.ToString(), false);
+            btnSave.SetBounds(20, 115, 160, 30);
+            btnSave.Click += (s, e) => SaveConfig(cmbDevices.SelectedItem.ToString(), (int)numInterval.Value, false);
 
             btnSaveAndRun = new Button();
             btnSaveAndRun.Text = "Uložit a schovat na pozadí";
-            btnSaveAndRun.SetBounds(190, 90, 220, 30);
-            btnSaveAndRun.Click += (s, e) => SaveConfig(cmbDevices.SelectedItem.ToString(), true);
+            btnSaveAndRun.SetBounds(190, 115, 220, 30);
+            btnSaveAndRun.Click += (s, e) => SaveConfig(cmbDevices.SelectedItem.ToString(), (int)numInterval.Value, true);
 
             Label lblHint = new Label();
             lblHint.Text = "Po skrytí na pozadí najdete program v pravo dole v tray nabídce u hodin (ikonka 'i'). Klikněte pravým tlačítkem pro vypnutí nebo ukázání okna. Dlouhé názvy zařízení mohou být od Microsoftu zkráceny.";
-            lblHint.SetBounds(20, 135, 390, 60);
+            lblHint.SetBounds(20, 155, 390, 60);
 
             this.Controls.Add(lblInfo);
             this.Controls.Add(cmbDevices);
+            this.Controls.Add(lblInterval);
+            this.Controls.Add(numInterval);
             this.Controls.Add(btnSave);
             this.Controls.Add(btnSaveAndRun);
             this.Controls.Add(lblHint);
         }
 
-        string GetConfigDevice()
+        string GetConfigDevice(out int interval)
         {
+            interval = 25;
             if (File.Exists("config.ini"))
             {
-                return File.ReadAllText("config.ini").Trim();
+                string[] lines = File.ReadAllLines("config.ini");
+                if (lines.Length > 0)
+                {
+                    int parsed;
+                    if (lines.Length > 1 && int.TryParse(lines[1], out parsed))
+                        interval = parsed;
+                    
+                    return lines[0].Trim();
+                }
             }
             return "";
         }
 
-        void SaveConfig(string deviceName, bool runHidden)
+        void SaveConfig(string deviceName, int intervalMinutes, bool runHidden)
         {
-            File.WriteAllText("config.ini", deviceName);
+            File.WriteAllLines("config.ini", new string[] { deviceName, intervalMinutes.ToString() });
             if (runHidden)
             {
                 this.Hide();
-                Thread t = new Thread(() => Program.RunLoop(deviceName));
+                Thread t = new Thread(() => Program.RunLoop(deviceName, intervalMinutes));
                 t.IsBackground = true;
                 t.Start();
                 
@@ -221,7 +248,7 @@ namespace AntiSleepDAC
             }
             else
             {
-                MessageBox.Show("Nastavení bylo úspěšně uloženo do konfiguračního souboru 'config.ini'.", "Uloženo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Nastavení (zařízení a interval " + intervalMinutes + " min) bylo úspěšně uloženo do config.ini.", "Uloženo", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }
@@ -237,10 +264,16 @@ namespace AntiSleepDAC
             if (args.Length > 0 && args[0] == "--hidden")
             {
                 string deviceName = "";
+                int interval = 25;
                 if (File.Exists("config.ini"))
-                    deviceName = File.ReadAllText("config.ini").Trim();
+                {
+                    string[] lines = File.ReadAllLines("config.ini");
+                    if (lines.Length > 0) deviceName = lines[0].Trim();
+                    int p;
+                    if (lines.Length > 1 && int.TryParse(lines[1], out p)) interval = p;
+                }
                 
-                RunLoop(deviceName);
+                RunLoop(deviceName, interval);
             }
             else
             {
@@ -248,7 +281,7 @@ namespace AntiSleepDAC
             }
         }
 
-        public static void RunLoop(string targetDevice)
+        public static void RunLoop(string targetDevice, int intervalMinutes)
         {
             int deviceIndex = 0; // default mapping (-1 in WinMM)
             if (!string.IsNullOrEmpty(targetDevice))
@@ -266,8 +299,8 @@ namespace AntiSleepDAC
                 }
                 catch { }
 
-                // Sleep parameters - wake the thread to check if we should exit (not technically needed but good to do block nicely without spinning)
-                Thread.Sleep(25 * 60 * 1000); // 25 min pause
+                // Sleep dynamically assigned amount of minutes
+                Thread.Sleep(intervalMinutes * 60 * 1000); 
             }
         }
     }
